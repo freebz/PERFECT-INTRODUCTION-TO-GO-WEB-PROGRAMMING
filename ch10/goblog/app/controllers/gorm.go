@@ -3,8 +3,17 @@ package controllers
 import (
 	"goblog/app/models"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/jinzhu/gorm"  // gorm 패키지 임포트
 	"github.com/revel/revel"
+)
+
+const (
+	DefaultName,
+	DefaultRole,
+	DefaultUsername,
+	DefaultPassword = "Admin", "admin", "admin", "admin"
 )
 
 var (
@@ -46,7 +55,11 @@ func InitDB() {
 }
 
 func migrate() {
-	db.AutoMigrate(&models.Post{}, &models.Comment{})
+	db.AutoMigrate(&models.Post{}, &models.Comment{}, &models.User{})
+	bcryptPassword, _ := bcrypt.GenerateFromPassword([]byte(DefaultPassword), bcrypt.DefaultCost)
+	db.Where(models.User{Name: DefaultName, Role: DefaultRole, Username: DefaultUsername}).
+		Attrs(models.User{Password: string(bcryptPassword)}).
+		FirstOrCreate(&models.User{})
 }
 
 // 트랜잭션 설정

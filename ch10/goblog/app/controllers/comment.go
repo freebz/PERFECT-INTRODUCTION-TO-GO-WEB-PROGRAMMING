@@ -8,7 +8,25 @@ import (
 )
 
 type Comment struct {
-	GormController
+	App
+}
+
+func (c Comment) CheckUser() revel.Result {
+	if c.MethodName != "Destroy" {
+		return nil
+	}
+
+	if c.CurrentUser == nil {
+		c.Flash.Error("Please log in first")
+		return c.Redirect(App.Login)
+	}
+
+	if c.CurrentUser.Role != "admin" {
+		c.Response.Status = 401 // Unauthorized
+		c.Flash.Error("You are not admin")
+		return c.Redirect(App.Login)
+	}
+	return nil
 }
 
 func (c Comment) Create(postId int, body, commenter string) revel.Result {

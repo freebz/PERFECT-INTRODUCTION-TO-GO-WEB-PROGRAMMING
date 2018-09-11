@@ -7,9 +7,31 @@ import (
 	"github.com/revel/revel"
 )
 
-// GormController를 임베디드 필드로 지정
+// App을 임베디드 필드로 지정
 type Post struct {
-	GormController
+	App
+}
+
+func (c Post) CheckUser() revel.Result {
+	// Index와 Show는 권한을 확인하지 않음.
+	switch c.MethodName {
+	case "Index", "Show":
+		return nil
+	}
+
+	// CurrentUser 정보가 없으면 로그인 페이지로 이동
+	if c.CurrentUser == nil {
+		c.Flash.Error("Please log in first")
+		return c.Redirect(App.Login)
+	}
+
+	// CurrentUser가 관리자가 아니면 로그인 페이지로 이동
+	if c.CurrentUser.Role != "admin" {
+		c.Response.Status = 401 // Unauthorized
+		c.Flash.Error("You are not admin")
+		return c.Redirect(App.Login)
+	}
+	return nil
 }
 
 // Order 메서드와 Find 메서드로 전체 포스트 조회

@@ -2,6 +2,8 @@ package app
 
 import (
 	"time"
+
+	"goblog/app/models"
 	
 	"github.com/revel/revel"
 )
@@ -43,6 +45,11 @@ func init() {
 	// 날짜 서식 지정
 	revel.TemplateFuncs["formatDate"] = func(date time.Time) string {
 		return date.Format("2006/01/02 03:04")
+	}
+
+	// 사용자의 권한 확인
+	revel.TemplateFuncs["isAdmin"] = func(currentUser *models.User) bool {
+		return currentUser != nil && currentUser.Role == "admin"
 	}
 }
 
